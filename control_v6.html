@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>PMV Karting — Control v5</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Montserrat',sans-serif;background:#0a0a0a;color:#fff;min-height:100vh;}
+header{background:linear-gradient(90deg,#1a0000,#8b0000,#dc143c);padding:14px 30px;display:flex;align-items:center;gap:15px;}
+header h1{font-size:20px;font-weight:900;letter-spacing:2px;}
+.sub{font-size:11px;opacity:0.6;margin-top:2px;}
+.status-dot{width:12px;height:12px;background:#00ff88;border-radius:50%;animation:blink 1.5s infinite;margin-left:auto;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+.emergency-bar{background:#0d0000;border-bottom:2px solid #ff0000;padding:10px 30px;display:flex;align-items:center;gap:12px;}
+.emergency-bar .elabel{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#ff4444;}
+.btn-emergency{background:linear-gradient(135deg,#cc0000,#ff0000);border:none;color:#fff;padding:10px 28px;font-family:'Montserrat',sans-serif;font-weight:900;font-size:13px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border-radius:4px;animation:pulseRed 1.5s infinite;}
+@keyframes pulseRed{0%,100%{box-shadow:0 0 0 0 rgba(255,0,0,0.5)}50%{box-shadow:0 0 0 8px rgba(255,0,0,0)}}
+.btn-emergency:hover{background:linear-gradient(135deg,#ff0000,#ff4444);}
+.visibility-bar{background:#111;border-bottom:1px solid #222;padding:8px 30px;display:flex;flex-wrap:wrap;gap:7px;align-items:center;}
+.visibility-bar .qlabel{font-size:10px;font-weight:700;letter-spacing:2px;color:#555;text-transform:uppercase;margin-right:4px;}
+.vbtn{border:1px solid #333;background:#1a1a1a;color:#777;padding:5px 12px;border-radius:20px;cursor:pointer;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;transition:all 0.2s;display:flex;align-items:center;gap:5px;}
+.vbtn .dot{width:7px;height:7px;border-radius:50%;background:#333;flex-shrink:0;transition:background 0.2s;}
+.vbtn.on{border-color:#dc143c;color:#fff;background:rgba(139,0,0,0.25);}
+.vbtn.on .dot{background:#00ff88;}
+.vbtn:hover{border-color:#dc143c;color:#fff;}
+nav{background:#1a1a1a;display:flex;border-bottom:2px solid #8b0000;overflow-x:auto;}
+nav button{background:none;border:none;color:#888;padding:12px 20px;cursor:pointer;font-family:'Montserrat',sans-serif;font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;transition:all 0.2s;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;}
+nav button:hover{color:#fff;background:#222;}
+nav button.active{color:#dc143c;border-bottom-color:#dc143c;}
+.tab{display:none;padding:20px 28px;}
+.tab.active{display:block;}
+h2{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#dc143c;margin-bottom:16px;border-bottom:1px solid #222;padding-bottom:8px;}
+h3{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#555;margin:16px 0 8px;}
+label{font-size:11px;color:#777;display:block;margin-bottom:4px;}
+input,select,textarea{background:#1a1a1a;color:#fff;border:1px solid #333;padding:8px 12px;border-radius:4px;font-family:'Montserrat',sans-serif;font-size:12px;width:100%;transition:border 0.2s;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#dc143c;}
+input[type=color]{padding:3px 5px;height:34px;cursor:pointer;}
+input[type=range]{accent-color:#dc143c;}
+.field{margin-bottom:12px;}
+.row{display:flex;gap:10px;}
+.col{flex:1;}
+.btn{background:linear-gradient(135deg,#8b0000,#dc143c);border:none;color:#fff;padding:9px 18px;border-radius:4px;cursor:pointer;font-family:'Montserrat',sans-serif;font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;transition:all 0.2s;display:inline-flex;align-items:center;gap:5px;}
+.btn:hover{background:linear-gradient(135deg,#dc143c,#ff2244);transform:translateY(-1px);}
+.btn-sm{padding:6px 12px;font-size:10px;}
+.btn-outline{background:none;border:1px solid #dc143c;color:#dc143c;}
+.btn-outline:hover{background:#4a0000;color:#fff;}
+.btn-green{background:linear-gradient(135deg,#005500,#00aa00);}
+.btn-green:hover{background:linear-gradient(135deg,#007700,#00cc00);}
+.btn-gray{background:#2a2a2a;border:1px solid #333;}
+.btn-gray:hover{background:#333;}
+.btn-hide{background:#1a1a1a;border:1px solid #2a2a2a;color:#777;}
+.btn-hide:hover{background:#2a0000;border-color:#550000;color:#ff5555;}
+.btns{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px;}
+.onoff{display:inline-flex;border:1px solid #2a2a2a;border-radius:4px;overflow:hidden;}
+.onoff .oon{background:#0d2200;color:#00cc00;border:none;padding:7px 14px;font-size:10px;cursor:pointer;font-family:'Montserrat',sans-serif;font-weight:700;letter-spacing:1px;text-transform:uppercase;transition:all 0.2s;}
+.onoff .ooff{background:#1a1a1a;color:#555;border:none;border-left:1px solid #2a2a2a;padding:7px 14px;font-size:10px;cursor:pointer;font-family:'Montserrat',sans-serif;font-weight:700;letter-spacing:1px;text-transform:uppercase;transition:all 0.2s;}
+.onoff .oon:hover{background:#003300;color:#00ff00;}
+.onoff .ooff:hover{background:#220000;color:#ff4444;}
+.pt{width:100%;border-collapse:collapse;font-size:12px;}
+.pt th{background:#111;padding:8px 6px;text-align:left;font-size:9px;letter-spacing:1px;color:#555;text-transform:uppercase;border-bottom:1px solid #222;}
+.pt td{padding:5px 6px;border-bottom:1px solid #181818;vertical-align:middle;}
+.pt tr:hover td{background:#131313;}
+.pt input,.pt select{padding:5px 7px;font-size:11px;}
+.del-btn{background:#1a0000;border:1px solid #330000;color:#ff3333;width:24px;height:24px;border-radius:3px;cursor:pointer;font-size:13px;font-family:monospace;display:flex;align-items:center;justify-content:center;}
+.foto-prev{width:36px;height:36px;object-fit:cover;border-radius:3px;border:1px solid #333;display:block;background:#1a1a1a;}
+.flag-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:12px;}
+.flag-btn{padding:16px 8px;font-size:20px;text-align:center;border-radius:6px;cursor:pointer;border:none;color:#fff;font-weight:700;transition:all 0.2s;}
+.flag-btn span{display:block;font-size:9px;letter-spacing:1px;margin-top:4px;font-family:'Montserrat',sans-serif;text-transform:uppercase;}
+.flag-btn:hover{filter:brightness(1.25);transform:scale(1.03);}
+.f-verde{background:#006600;}.f-amarilla-local{background:#885500;}.f-fciy{background:#774400;}.f-roja{background:#660000;}.f-safety{background:#004466;}.f-chequered{background:#111;border:1px solid #444;}.f-clear{background:#1a1a1a;border:1px solid #333;grid-column:1/-1;}
+.lt-prev{background:#141414;border-left:4px solid #dc143c;padding:12px 16px;margin:10px 0;border-radius:0 4px 4px 0;}
+.lt-prev .lt-n{font-size:22px;font-weight:900;}
+.lt-prev .lt-s{font-size:13px;opacity:0.65;margin-top:3px;}
+.vuelta-box{background:#0d0000;border:2px solid #8b0000;border-radius:6px;padding:14px;text-align:center;}
+.vuelta-num{font-size:52px;font-weight:900;line-height:1;}
+.vuelta-total-lbl{font-size:13px;opacity:0.5;margin-top:4px;}
+.v-controls{display:flex;gap:7px;justify-content:center;margin-top:10px;}
+.v-controls button{width:44px;height:44px;font-size:20px;font-weight:900;border-radius:4px;}
+.cron-box{background:#0a0a1a;border:2px solid #0044aa;border-radius:6px;padding:14px;text-align:center;}
+.cron-time{font-size:38px;font-weight:900;line-height:1;color:#4488ff;letter-spacing:2px;}
+.cron-lbl{font-size:10px;opacity:0.5;margin-top:4px;letter-spacing:2px;text-transform:uppercase;}
+.cron-hhmmss{color:#88bbff;font-size:10px;letter-spacing:1px;margin-top:4px;}
+.cron-controls{display:flex;gap:7px;justify-content:center;margin-top:10px;}
+.cron-controls button{width:44px;height:44px;font-size:18px;font-weight:900;border-radius:4px;border:none;cursor:pointer;font-family:'Montserrat',sans-serif;}
+.cron-start{background:#004400;color:#00ff88;}.cron-start:hover{background:#006600;}
+.cron-pause{background:#444400;color:#ffff00;}.cron-pause:hover{background:#666600;}
+.cron-reset{background:#333;color:#aaa;}.cron-reset:hover{background:#444;}
+.gfx-panel{background:#111;border:1px solid #1c1c1c;border-radius:5px;padding:12px 14px;margin-bottom:9px;}
+.gfx-panel h4{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#555;margin-bottom:8px;}
+.gfx-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid #181818;}
+.gfx-row:last-child{border:none;}
+.gfx-name{font-size:12px;font-weight:600;}
+.mode-card{background:#131313;border:1px solid #2a2a2a;border-radius:6px;padding:12px 14px;cursor:pointer;transition:all 0.2s;}
+.mode-card:hover{border-color:#8b0000;}
+.mode-card.selected{border-color:#dc143c;background:rgba(139,0,0,0.12);}
+.mode-card h4{font-size:13px;font-weight:700;margin-bottom:3px;}
+.mode-card p{font-size:10px;color:#555;}
+.mode-icon{font-size:20px;margin-bottom:6px;}
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px;}
+.json-status{font-size:11px;padding:7px 12px;border-radius:4px;margin-top:8px;display:none;}
+.json-ok{background:rgba(0,80,0,0.25);color:#00ff88;border:1px solid #005500;display:block;}
+.json-error{background:rgba(80,0,0,0.25);color:#ff8888;border:1px solid #550000;display:block;}
+.theme-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px;}
+.theme-card{border:2px solid #2a2a2a;border-radius:5px;padding:10px 8px;cursor:pointer;text-align:center;transition:all 0.2s;}
+.theme-card:hover{border-color:#888;}
+.theme-card.selected{border-color:#dc143c;}
+.theme-card .tc-preview{height:30px;border-radius:3px;margin-bottom:6px;}
+.theme-card .tc-label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+.color-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.color-row{display:flex;align-items:center;gap:8px;}
+.color-row label{white-space:nowrap;width:90px;flex-shrink:0;}
+.color-row input[type=color]{width:44px;padding:2px;height:32px;}
+.color-row input[type=text]{flex:1;}
+.font-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.font-card{background:#131313;border:2px solid #2a2a2a;border-radius:5px;padding:10px 12px;cursor:pointer;transition:all 0.2s;}
+.font-card:hover{border-color:#888;}
+.font-card.selected{border-color:#dc143c;}
+.font-card .fc-name{font-size:13px;font-weight:700;margin-bottom:2px;}
+.font-card .fc-sample{font-size:18px;opacity:0.7;}
+.size-val{font-size:14px;font-weight:900;color:#dc143c;width:40px;text-align:right;display:inline-block;}
+.divider{height:1px;background:#1a1a1a;margin:16px 0;}
+.toast{position:fixed;bottom:20px;right:20px;background:#0a2a0a;color:#fff;padding:9px 16px;border-radius:4px;font-weight:700;font-size:11px;opacity:0;transition:opacity 0.25s;pointer-events:none;z-index:999;letter-spacing:1px;border-left:3px solid #00ff88;}
+.toast.show{opacity:1;}
+
+/* ══ OPACIDAD SLIDERS ══ */
+.op-section{background:#111;border:1px solid #1c1c1c;border-radius:6px;padding:14px 18px;margin-bottom:12px;}
+.op-section-title{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#888;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.op-section-title .tag{background:#222;padding:3px 8px;border-radius:3px;font-size:8px;letter-spacing:1px;}
+.op-row{display:grid;grid-template-columns:140px 1fr 48px;align-items:center;gap:10px;margin-bottom:9px;}
+.op-row:last-child{margin-bottom:0;}
+.op-row label{font-size:11px;color:#888;text-align:right;}
+.op-row input[type=range]{accent-color:#dc143c;width:100%;}
+.op-val{font-size:13px;font-weight:900;color:#dc143c;text-align:center;}
+.op-mini-preview{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:middle;}
+
+/* Intro preview */
+.intro-prev{background:#050505;border:1px solid #2a2a2a;border-radius:6px;padding:16px;margin:12px 0;position:relative;overflow:hidden;min-height:80px;}
+.intro-prev::before{content:'PREVIEW';position:absolute;top:8px;right:10px;font-size:9px;letter-spacing:2px;color:#333;font-weight:700;}
+.intro-prev .ip-ev{font-size:18px;font-weight:900;color:#fff;}
+.intro-prev .ip-sub{font-size:12px;color:#dc143c;margin-top:4px;}
+.intro-prev .ip-bar{height:2px;background:linear-gradient(90deg,#dc143c,#8b0000,transparent);margin-top:10px;}
+</style>
+
+<!-- Firebase SDK + PMV Bridge -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="studio-bridge.js"></script>
+
+
+</head>
+<body>
+<header>
+  <div style="font-size:22px;">🏁</div>
+  <div><h1>PMV KARTING GRAPHICS v5</h1><div class="sub">Opacidad completa · Intro F1 · Parrilla F1 · HH:mm:ss</div></div>
+  <div class="status-dot"></div>
+</header>
+
+<div class="emergency-bar">
+  <span class="elabel">⚠ Emergencia</span>
+  <button class="btn-emergency" onclick="clearAll()">🔴 LIMPIAR PANTALLA COMPLETA</button>
+</div>
+
+<div class="visibility-bar">
+  <span class="qlabel">Quick</span>
+  <button class="vbtn on" id="vbtn-bug"       onclick="quickToggle('bug')"      ><div class="dot"></div>Bug</button>
+  <button class="vbtn on" id="vbtn-sesionbar"  onclick="quickToggle('sesionbar')"><div class="dot"></div>Info Bar</button>
+  <button class="vbtn on" id="vbtn-torre"      onclick="quickToggle('torre')"    ><div class="dot"></div>Torre</button>
+  <button class="vbtn on" id="vbtn-timer"      onclick="quickToggle('timer')"    ><div class="dot"></div>Timer</button>
+  <button class="vbtn"    id="vbtn-intro"      onclick="quickToggle('intro')"    ><div class="dot"></div>Intro</button>
+  <button class="vbtn"    id="vbtn-lt"         onclick="quickToggle('lt')"       ><div class="dot"></div>LT</button>
+  <button class="vbtn"    id="vbtn-bandera"    onclick="quickToggle('bandera')"  ><div class="dot"></div>Bandera</button>
+  <button class="vbtn"    id="vbtn-mensaje"    onclick="quickToggle('mensaje')"  ><div class="dot"></div>Msg</button>
+  <button class="vbtn"    id="vbtn-fullgfx"    onclick="quickToggle('fullgfx')"  ><div class="dot"></div>Full GFX</button>
+  <button class="vbtn"    id="vbtn-batalla"    onclick="quickToggle('batalla')"  ><div class="dot"></div>Batalla</button>
+  <button class="vbtn"    id="vbtn-ticker"     onclick="quickToggle('ticker')"   ><div class="dot"></div>Ticker</button>
+  <button class="vbtn"    id="vbtn-vr"         onclick="quickToggle('vr')"       ><div class="dot"></div>VR</button>
+</div>
+
+<nav>
+  <button class="active" onclick="showTab('setup',this)">⚙ Setup</button>
+  <button onclick="showTab('tema',this)">🎨 Tema Visual</button>
+  <button onclick="showTab('intro-tab',this)">🎬 Intro</button>
+  <button onclick="showTab('sesion',this)">Sesión</button>
+  <button onclick="showTab('carrera',this)">Torre</button>
+  <button onclick="showTab('lowerthird',this)">Lower Third</button>
+  <button onclick="showTab('banderas',this)">Banderas</button>
+  <button onclick="showTab('graficos',this)">Gráficos</button>
+  <button onclick="showTab('campeonato',this)">Campeonato</button>
+</nav>
+
+<!-- ══ SETUP ══ -->
+<div id="setup" class="tab active">
+  <h2>Configuración Inicial</h2>
+  <div class="row">
+    <div class="col">
+      <h3>Modo pilotos</h3>
+      <div class="mode-grid">
+        <div class="mode-card selected" id="mode-manual" onclick="selectPilotosMode('manual')"><div class="mode-icon">⌨️</div><h4>Manual</h4><p>Tabla editable</p></div>
+        <div class="mode-card" id="mode-json" onclick="selectPilotosMode('json')"><div class="mode-icon">📄</div><h4>JSON</h4><p>URL o archivo local</p></div>
+      </div>
+      <div id="json-loader" style="display:none;">
+        <div class="field"><label>URL del JSON</label><input id="json-url" placeholder="https://ejemplo.com/pilotos.json"></div>
+        <div class="btns"><button class="btn btn-sm" onclick="loadJSON()">📥 Cargar URL</button><input type="file" id="json-file" accept=".json" style="display:none;" onchange="loadLocalJSON(this)"><button class="btn btn-sm btn-gray" onclick="document.getElementById('json-file').click()">📂 Local</button><button class="btn btn-sm btn-outline" onclick="exportJSON()">💾 Exportar</button></div>
+        <div id="json-status" class="json-status"></div>
+      </div>
+    </div>
+    <div class="col">
+      <h3>Modo temporizador</h3>
+      <div class="mode-grid">
+        <div class="mode-card selected" id="mode-vueltas"    onclick="selectTimerMode('vueltas')"   ><div class="mode-icon">🔢</div><h4>Vueltas</h4><p>Contador manual</p></div>
+        <div class="mode-card"          id="mode-cronometro" onclick="selectTimerMode('cronometro')"><div class="mode-icon">⏱</div><h4>Cronómetro</h4><p>HH:mm:ss</p></div>
+        <div class="mode-card"          id="mode-ambos"      onclick="selectTimerMode('ambos')"     ><div class="mode-icon">🔢⏱</div><h4>Ambos</h4></div>
+        <div class="mode-card"          id="mode-regresivo"  onclick="selectTimerMode('regresivo')" ><div class="mode-icon">⏳</div><h4>Regresivo</h4></div>
+      </div>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <div class="btns"><button class="btn" onclick="applySetup()">✔ Aplicar y continuar</button></div>
+</div>
+
+<!-- ══ TEMA ══ -->
+<div id="tema" class="tab">
+  <h2>Tema Visual del Overlay</h2>
+  <h3>Estilos predefinidos</h3>
+  <div class="theme-grid">
+    <div class="theme-card selected" id="tc-classic"    onclick="selectPreset('classic')"    ><div class="tc-preview" style="background:linear-gradient(90deg,#5a0000,#dc143c);"></div><div class="tc-label">Classic Dark</div></div>
+    <div class="theme-card"          id="tc-sport-blue" onclick="selectPreset('sport-blue')" ><div class="tc-preview" style="background:linear-gradient(90deg,#002244,#0088ff);"></div><div class="tc-label">Sport Blue</div></div>
+    <div class="theme-card"          id="tc-neon-green" onclick="selectPreset('neon-green')" ><div class="tc-preview" style="background:linear-gradient(90deg,#003319,#00ff88);"></div><div class="tc-label">Neon Green</div></div>
+    <div class="theme-card"          id="tc-gold"       onclick="selectPreset('gold')"       ><div class="tc-preview" style="background:linear-gradient(90deg,#3a2800,#c8960c);"></div><div class="tc-label">Gold Premium</div></div>
+    <div class="theme-card"          id="tc-white"      onclick="selectPreset('white')"      ><div class="tc-preview" style="background:linear-gradient(90deg,#fff,#ccc);border:1px solid #444;"></div><div class="tc-label">White Clean</div></div>
+  </div>
+  <h3>Colores personalizados</h3>
+  <div class="color-grid">
+    <div class="field"><div class="color-row"><label>Color Principal</label><input type="color" id="col-c1" value="#dc143c" oninput="previewCustom()"><input type="text" id="col-c1-txt" value="#dc143c" style="width:90px;" oninput="syncColor('c1')"></div></div>
+    <div class="field"><div class="color-row"><label>Color Secundario</label><input type="color" id="col-c2" value="#8b0000" oninput="previewCustom()"><input type="text" id="col-c2-txt" value="#8b0000" style="width:90px;" oninput="syncColor('c2')"></div></div>
+    <div class="field"><div class="color-row"><label>Color Acento</label><input type="color" id="col-accent" value="#00ff88" oninput="previewCustom()"><input type="text" id="col-accent-txt" value="#00ff88" style="width:90px;" oninput="syncColor('accent')"></div></div>
+    <div class="field"><div class="color-row"><label>Texto Principal</label><input type="color" id="col-txt" value="#ffffff" oninput="previewCustom()"><input type="text" id="col-txt-txt" value="#ffffff" style="width:90px;" oninput="syncColor('txt')"></div></div>
+    <div class="field"><div class="color-row"><label>Inclinación Skew</label><input type="range" min="-20" max="0" value="-8" id="col-skew" oninput="previewCustom();document.getElementById('skew-val').textContent=this.value+'°'"><span class="size-val" id="skew-val">-8°</span></div></div>
+  </div>
+
+  <!-- ══════════ OPACIDADES ══════════ -->
+  <h3>Opacidad de fondos — Esquina</h3>
+  <div class="op-section">
+    <div class="op-section-title"><span class="op-mini-preview" style="background:#111;border:1px solid #333;"></span>Elementos permanentes de esquina <span class="tag">LIVE</span></div>
+    <div class="op-row"><label>🔲 Bug / Esquina</label>     <input type="range" min="0" max="100" value="88" id="op-bug"   oninput="liveOp('bug',  this)"><span class="op-val" id="op-bug-v">88%</span></div>
+    <div class="op-row"><label>📋 Torre lateral</label>     <input type="range" min="0" max="100" value="88" id="op-torre" oninput="liveOp('torre',this)"><span class="op-val" id="op-torre-v">88%</span></div>
+    <div class="op-row"><label>⏱ Timer / Vuelta</label>     <input type="range" min="0" max="100" value="92" id="op-timer" oninput="liveOp('timer',this)"><span class="op-val" id="op-timer-v">92%</span></div>
+    <div class="op-row"><label>📊 Barra superior</label>    <input type="range" min="0" max="100" value="88" id="op-bar"   oninput="liveOp('bar',  this)"><span class="op-val" id="op-bar-v">88%</span></div>
+  </div>
+
+  <h3>Opacidad de fondos — Centro de pantalla</h3>
+  <div class="op-section">
+    <div class="op-section-title"><span class="op-mini-preview" style="background:#1a0000;border:1px solid #550000;"></span>Gráficos pantalla completa <span class="tag">LIVE</span></div>
+    <div class="op-row"><label>🎬 Pantalla Intro</label>    <input type="range" min="0" max="100" value="97" id="op-intro"    oninput="liveOp('intro',   this)"><span class="op-val" id="op-intro-v">97%</span></div>
+    <div class="op-row"><label>🏎 Parrilla / Tablas</label> <input type="range" min="0" max="100" value="97" id="op-fullgfx"  oninput="liveOp('fullgfx', this)"><span class="op-val" id="op-fullgfx-v">97%</span></div>
+    <div class="op-row"><label>🏆 Podio final</label>       <input type="range" min="0" max="100" value="96" id="op-podio"    oninput="liveOp('podio',   this)"><span class="op-val" id="op-podio-v">96%</span></div>
+    <div class="op-row"><label>📣 Mensajes de Dir.</label>  <input type="range" min="0" max="100" value="93" id="op-mensaje"  oninput="liveOp('mensaje', this)"><span class="op-val" id="op-mensaje-v">93%</span></div>
+    <div class="op-row"><label>⚔ Panel Batalla</label>     <input type="range" min="0" max="100" value="88" id="op-batalla"  oninput="liveOp('batalla', this)"><span class="op-val" id="op-batalla-v">88%</span></div>
+  </div>
+  <div class="btns">
+    <button class="btn" onclick="applyAllOpacity()">✔ Aplicar todas las opacidades</button>
+    <button class="btn btn-gray btn-sm" onclick="resetOpacity()">↺ Restablecer</button>
+  </div>
+
+  <h3>Tipografía</h3>
+  <div class="font-grid">
+    <div class="font-card selected" id="fc-montserrat" onclick="selectFont('Montserrat, sans-serif','montserrat')"><div class="fc-sample" style="font-family:'Montserrat',sans-serif;">Aa</div><div class="fc-name">Montserrat</div></div>
+    <div class="font-card" id="fc-bebas" onclick="selectFont('Bebas Neue, cursive','bebas')"><div class="fc-sample" style="font-family:'Bebas Neue',cursive;">Aa</div><div class="fc-name">Bebas Neue</div></div>
+    <div class="font-card" id="fc-oswald" onclick="selectFont('Oswald, sans-serif','oswald')"><div class="fc-sample" style="font-family:'Oswald',sans-serif;">Aa</div><div class="fc-name">Oswald</div></div>
+    <div class="font-card" id="fc-rajdhani" onclick="selectFont('Rajdhani, sans-serif','rajdhani')"><div class="fc-sample" style="font-family:'Rajdhani',sans-serif;">Aa</div><div class="fc-name">Rajdhani</div></div>
+    <div class="font-card" id="fc-barlow" onclick="selectFont('Barlow Condensed, sans-serif','barlow')"><div class="fc-sample" style="font-family:'Barlow Condensed',sans-serif;">Aa</div><div class="fc-name">Barlow Condensed</div></div>
+    <div class="font-card" id="fc-custom"><input id="font-custom" placeholder="Google Font name" style="font-size:10px;" onclick="event.stopPropagation()"><button class="btn btn-sm" onclick="selectFont(document.getElementById('font-custom').value+', sans-serif','custom')" style="margin-top:4px;width:100%;">Usar</button></div>
+  </div>
+  <div class="divider"></div>
+  <div class="btns"><button class="btn" onclick="applyTheme()">✔ Aplicar Tema</button><button class="btn btn-gray btn-sm" onclick="resetTheme()">↺ Restablecer</button></div>
+</div>
+
+<!-- ══ INTRO ══ -->
+<div id="intro-tab" class="tab">
+  <h2>Pantalla de Inicio — Estilo F1</h2>
+  <div class="row">
+    <div class="col">
+      <div class="field"><label>Nombre del evento</label><input id="ii-evento" value="PMV KARTING CHAMPIONSHIP" oninput="updateIntroPreview()"></div>
+      <div class="field"><label>Categoría / Subtítulo</label><input id="ii-categoria" value="Rotax Junior" oninput="updateIntroPreview()"></div>
+      <div class="row">
+        <div class="col"><div class="field"><label>Ronda (texto badge)</label><input id="ii-ronda" value="Ronda 1 — 2026"></div></div>
+        <div class="col"><div class="field"><label>Nº de Ronda</label><input id="ii-numronda" type="number" value="1" style="width:70px;"></div></div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="field"><label>Circuito</label><input id="ii-circuito" value="Kartódromo PMV"></div>
+      <div class="field"><label>Ciudad / País</label><input id="ii-ciudad" value="Quito, Ecuador"></div>
+      <div class="row">
+        <div class="col"><div class="field"><label>Longitud del trazado</label><input id="ii-longitud" value="1.200 km"></div></div>
+        <div class="col"><div class="field"><label>Curvas</label><input id="ii-curvas" value="12 curvas"></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col"><div class="field"><label>Vueltas / Duración</label><input id="ii-vueltas" value="20 vueltas"></div></div>
+    <div class="col"><div class="field"><label>Temperatura pista</label><input id="ii-temp" value="28°C"></div></div>
+    <div class="col"><div class="field"><label>Condición</label><select id="ii-clima"><option>☀️ Seca</option><option>🌦️ Húmeda</option><option>🌧️ Mojada</option></select></div></div>
+  </div>
+  <div class="row">
+    <div class="col"><div class="field"><label>Pilotos en parrilla</label><input id="ii-pilotos" type="number" value="18"></div></div>
+    <div class="col"><div class="field"><label>Pole Position</label><input id="ii-pole" placeholder="#7 Carlos López — 1:21.456"></div></div>
+    <div class="col"><div class="field"><label>VR carrera anterior</label><input id="ii-vr" placeholder="1:22.341 — López"></div></div>
+  </div>
+  <div class="row">
+    <div class="col"><div class="field"><label>Imagen del trazado (URL)</label><input id="ii-trackimg" placeholder="https://url-imagen-circuito.jpg"></div></div>
+    <div class="col"><div class="field"><label>Texto pie de pantalla</label><input id="ii-extra" value="Transmisión Oficial"></div></div>
+  </div>
+  <div class="field"><label>Auto-ocultar tras (segundos, 0 = manual)</label><input id="ii-autohide" type="number" value="20" style="width:90px;"></div>
+  <div class="intro-prev">
+    <div class="ip-ev" id="ipev">PMV KARTING CHAMPIONSHIP</div>
+    <div class="ip-sub" id="ipsub">Rotax Junior — Ronda 1</div>
+    <div class="ip-bar"></div>
+  </div>
+  <div class="btns">
+    <button class="btn" onclick="emitIntro()">🎬 LANZAR PANTALLA DE INICIO</button>
+    <button class="btn btn-hide" onclick="hideIntro()">✕ OCULTAR</button>
+  </div>
+</div>
+
+<!-- ══ SESION ══ -->
+<div id="sesion" class="tab">
+  <h2>Sesión</h2>
+  <div class="row">
+    <div class="col"><div class="field"><label>Evento</label><input id="s_evento" value="PMV Karting Championship 2026"></div></div>
+    <div class="col"><div class="field"><label>Categoría</label><input id="s_categoria" value="Rotax Junior"></div></div>
+  </div>
+  <div class="row">
+    <div class="col"><div class="field"><label>Tipo</label><select id="s_tipo"><option>Práctica Libre</option><option>Clasificación</option><option>Pre-Final</option><option selected>Final</option></select></div></div>
+    <div class="col"><div class="field"><label>Ronda</label><input id="s_ronda" value="Ronda 1 — Quito"></div></div>
+    <div class="col"><div class="field"><label>Circuito</label><input id="s_circuito" value="Kartódromo PMV"></div></div>
+  </div>
+  <div class="row">
+    <div class="col"><div class="field"><label>Temp. Aire</label><input id="s_aire" value="22°C"></div></div>
+    <div class="col"><div class="field"><label>Temp. Pista</label><input id="s_pista" value="28°C"></div></div>
+    <div class="col"><div class="field"><label>Clima</label><select id="s_clima"><option>Seca ☀️</option><option>Húmeda 🌦️</option><option>Mojada 🌧️</option></select></div></div>
+  </div>
+  <div class="divider"></div>
+  <div class="row">
+    <div class="col" id="panel-vueltas">
+      <h3>Contador de vueltas</h3>
+      <div class="vuelta-box"><div class="vuelta-num"><span id="v-actual">0</span></div><div class="vuelta-total-lbl">de <span id="v-total-lbl">20</span> vueltas</div></div>
+      <div class="row" style="margin-top:8px;"><div class="col"><label>Total vueltas</label><input id="s_vueltas" type="number" value="20" oninput="document.getElementById('v-total-lbl').textContent=this.value"></div></div>
+      <div class="v-controls"><button class="btn btn-gray" onclick="cambiarVuelta(-1)">−</button><button class="btn btn-gray" onclick="resetVuelta()">0</button><button class="btn" onclick="cambiarVuelta(1)">+</button></div>
+    </div>
+    <div class="col" id="panel-cronometro" style="display:none;">
+      <h3 id="cron-title-label">Cronómetro</h3>
+      <div class="cron-box"><div class="cron-time" id="cron-display">00:00:00</div><div class="cron-hhmmss">HH:mm:ss</div><div class="cron-lbl" id="cron-subtitle">Parado</div></div>
+      <div id="regresivo-setup" style="display:none;margin-top:8px;"><label>Duración (HH:mm:ss)</label><input id="cron-duration" value="00:15:00" placeholder="00:15:00"></div>
+      <div class="cron-controls"><button class="cron-start" onclick="cronStart()">▶</button><button class="cron-pause" onclick="cronPause()">⏸</button><button class="cron-reset" onclick="cronReset()">↺</button></div>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <div class="btns">
+    <button class="btn" onclick="emitSesion()">✔ Actualizar Sesión</button>
+    <div class="onoff"><button class="oon" onclick="setVbtnOn('bug');emit('SHOW_BUG')">Bug ON</button><button class="ooff" onclick="setVbtnOff('bug');emit('HIDE_ELEMENT',{el:'bug'})">OFF</button></div>
+    <div class="onoff"><button class="oon" onclick="setVbtnOn('sesionbar');emit('TOGGLE_SESIONBAR',{visible:true})">Info Bar ON</button><button class="ooff" onclick="setVbtnOff('sesionbar');emit('TOGGLE_SESIONBAR',{visible:false})">OFF</button></div>
+    <div class="onoff"><button class="oon" onclick="setVbtnOn('timer');emit('TOGGLE_TIMER',{visible:true})">Timer ON</button><button class="ooff" onclick="setVbtnOff('timer');emit('TOGGLE_TIMER',{visible:false})">OFF</button></div>
+  </div>
+</div>
+
+<!-- ══ TORRE ══ -->
+<div id="carrera" class="tab">
+  <h2>Torre de Tiempos</h2>
+  <div class="btns" style="margin-bottom:12px;"><button class="btn btn-sm" onclick="addPilotoRow()">+ Piloto</button><button class="btn btn-sm btn-gray" onclick="cargarDemo()">📋 Demo (10)</button><button class="btn btn-sm btn-outline" onclick="limpiarPilotos()">🗑 Limpiar</button></div>
+  <div style="overflow-x:auto;">
+  <table class="pt"><thead><tr><th style="width:38px;">Pos</th><th style="width:45px;">Nº</th><th style="width:44px;">Foto</th><th>Piloto</th><th>Equipo</th><th style="width:48px;">País</th><th style="width:88px;">Mejor V.</th><th style="width:70px;">Gap</th><th style="width:65px;">Estado</th><th style="width:26px;"></th></tr></thead><tbody id="pilotos-tbody"></tbody></table>
+  </div>
+  <div class="divider"></div>
+  <div class="row">
+    <div class="col">
+      <h3>Vuelta Rápida</h3>
+      <div class="row">
+        <div class="col"><div class="field"><label>Piloto</label><input id="vr_piloto" placeholder="Juan Pérez"></div></div>
+        <div class="col"><div class="field"><label>Número</label><input id="vr_num" placeholder="#12"></div></div>
+        <div class="col"><div class="field"><label>Tiempo</label><input id="vr_tiempo" placeholder="1:22.456"></div></div>
+        <div class="col"><div class="field"><label>Vuelta</label><input id="vr_vuelta" placeholder="8"></div></div>
+      </div>
+      <button class="btn btn-green btn-sm" onclick="emitVR()">🟣 Lanzar Vuelta Rápida</button>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <div class="btns"><button class="btn" onclick="emitTorre()">📊 Actualizar Torre</button><div class="onoff"><button class="oon" onclick="setVbtnOn('torre');emit('TOGGLE_TORRE',{visible:true})">Torre ON</button><button class="ooff" onclick="setVbtnOff('torre');emit('TOGGLE_TORRE',{visible:false})">OFF</button></div></div>
+</div>
+
+<!-- ══ LOWER THIRD ══ -->
+<div id="lowerthird" class="tab">
+  <h2>Lower Third</h2>
+  <div class="row"><div class="col" style="max-width:200px;"><div class="field"><label>Tipo</label><select id="lt_tipo" onchange="updateLTPreview()"><option value="piloto">🏎 Piloto</option><option value="entrevistado">🎙 Entrevistado</option><option value="comentarista">🎤 Comentarista</option><option value="director">📋 Director de Carrera</option><option value="equipo">🔧 Jefe de Equipo</option></select></div></div></div>
+  <div class="row"><div class="col"><div class="field"><label>Nombre Principal</label><input id="lt_nombre" value="JUAN PÉREZ" oninput="updateLTPreview()"></div></div><div class="col"><div class="field"><label>Subtítulo</label><input id="lt_sub" value="#12 — Team Red Racing" oninput="updateLTPreview()"></div></div></div>
+  <div class="row"><div class="col" style="max-width:90px;"><div class="field"><label>Bandera</label><input id="lt_pais" value="🇪🇨" oninput="updateLTPreview()"></div></div><div class="col"><div class="field"><label>Dato Extra</label><input id="lt_extra" value="P3 · 125 pts" oninput="updateLTPreview()"></div></div></div>
+  <div class="lt-prev"><div class="lt-n" id="lt_pn">JUAN PÉREZ 🇪🇨</div><div class="lt-s" id="lt_ps">#12 — Team Red Racing | P3 · 125 pts</div></div>
+  <div class="btns"><button class="btn" onclick="emitLT()">▶ LANZAR</button><button class="btn btn-hide" onclick="hideLT()">✕ OCULTAR</button></div>
+</div>
+
+<!-- ══ BANDERAS ══ -->
+<div id="banderas" class="tab">
+  <h2>Banderas</h2>
+  <div class="flag-grid">
+    <button class="flag-btn f-verde" onclick="emitFlag('verde')">🟢<span>Verde</span></button>
+    <button class="flag-btn f-amarilla-local" onclick="emitFlag('amarilla-local')">🟡<span>Amarilla Local</span></button>
+    <button class="flag-btn f-fciy" onclick="emitFlag('fciy')">🟡🟡<span>Full Course Yellow</span></button>
+    <button class="flag-btn f-roja" onclick="emitFlag('roja')">🔴<span>Bandera Roja</span></button>
+    <button class="flag-btn f-safety" onclick="emitFlag('safety')">🚗<span>Safety Kart</span></button>
+    <button class="flag-btn f-chequered" onclick="emitFlag('chequered')">🏁<span>A Cuadros</span></button>
+    <button class="flag-btn f-clear" onclick="emitFlag('clear')">✕<span>Limpiar</span></button>
+  </div>
+  <div class="divider"></div>
+  <h3>Mensaje Dirección de Carrera</h3>
+  <div class="field"><label>Texto</label><input id="msg_texto" placeholder="Piloto #12 bajo investigación"></div>
+  <div class="row"><div class="col"><div class="field"><label>Tipo</label><select id="msg_tipo"><option value="info">ℹ Info</option><option value="warning">⚠ Advertencia</option><option value="penalty">🔴 Penalización</option><option value="safety">🔵 Safety</option></select></div></div><div class="col"><div class="field"><label>Duración (seg)</label><input id="msg_dur" type="number" value="8"></div></div></div>
+  <div class="btns"><button class="btn" onclick="emitMensaje()">📣 Lanzar</button><button class="btn btn-hide" onclick="hideMensaje()">✕ Ocultar</button></div>
+</div>
+
+<!-- ══ GRAFICOS ══ -->
+<div id="graficos" class="tab">
+  <h2>Gráficos Full Screen</h2>
+  <div class="row">
+    <div class="col">
+      <div class="gfx-panel"><h4>🏎 Inicio de Carrera</h4>
+        <div class="gfx-row"><span class="gfx-name">Parrilla de Salida (F1)</span><div class="onoff"><button class="oon" onclick="emitFG('parrilla')">SHOW</button><button class="ooff" onclick="emitFG('hide')">HIDE</button></div></div>
+        <div class="gfx-row"><span class="gfx-name">Clasificación Parcial</span><div class="onoff"><button class="oon" onclick="emitFG('clasificacion')">SHOW</button><button class="ooff" onclick="emitFG('hide')">HIDE</button></div></div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="gfx-panel"><h4>🏆 Final de Carrera</h4>
+        <div class="gfx-row"><span class="gfx-name">Resultados Finales</span><div class="onoff"><button class="oon" onclick="emitFG('resultados')">SHOW</button><button class="ooff" onclick="emitFG('hide')">HIDE</button></div></div>
+        <div class="gfx-row"><span class="gfx-name">Podio Top 3</span><div class="onoff"><button class="oon" onclick="emitFG('podio')">SHOW</button><button class="ooff" onclick="emitFG('hide')">HIDE</button></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col"><div class="gfx-panel"><h4>📊 Campeonato</h4><div class="gfx-row"><span class="gfx-name">Tabla de Puntos</span><div class="onoff"><button class="oon" onclick="emitFG('campeonato-tabla')">SHOW</button><button class="ooff" onclick="emitFG('hide')">HIDE</button></div></div></div></div>
+    <div class="col">
+      <div class="gfx-panel"><h4>⚔ Batalla en Pista</h4>
+        <div class="gfx-row"><span class="gfx-name">Panel Batalla</span><div class="onoff"><button class="oon" onclick="emitBatalla()">SHOW</button><button class="ooff" onclick="hideBatalla()">HIDE</button></div></div>
+        <div style="padding:8px 0;"><div class="row"><div class="col"><input id="bat_a" placeholder="Piloto A" style="font-size:11px;"></div><div class="col"><input id="bat_b" placeholder="Piloto B" style="font-size:11px;"></div><div style="width:78px;"><input id="bat_delta" placeholder="+0.3s" style="font-size:11px;"></div></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="gfx-panel"><h4>📜 Ticker</h4>
+    <div class="field"><textarea id="ticker_text" style="height:48px;" placeholder="PMV Karting Championship 2026 | @pmvracing"></textarea></div>
+    <div class="btns"><button class="btn btn-sm" onclick="emitTicker(true)">▶ ON</button><button class="btn btn-hide btn-sm" onclick="emitTicker(false)">✕ OFF</button></div>
+  </div>
+</div>
+
+<!-- ══ CAMPEONATO ══ -->
+<div id="campeonato" class="tab">
+  <h2>Puntos del Campeonato</h2>
+  <div class="btns" style="margin-bottom:12px;"><button class="btn btn-sm btn-gray" onclick="cargarCampDemo()">📋 Demo</button><button class="btn btn-sm" onclick="addCampRow()">+ Añadir</button></div>
+  <table class="pt"><thead><tr><th>Pos</th><th>Piloto</th><th>Equipo</th><th style="width:60px;">Pts</th><th style="width:60px;">Dif.</th><th style="width:50px;">VR</th><th style="width:26px;"></th></tr></thead><tbody id="camp-tbody"></tbody></table>
+  <div class="divider"></div>
+  <div class="btns"><button class="btn" onclick="emitFG('campeonato-tabla')">📊 Mostrar</button><button class="btn btn-hide" onclick="emitFG('hide')">✕ Ocultar</button></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const ch=new BroadcastChannel('pmv-karting-gfx');
+let vActual=0,timerMode='vueltas',cronRunning=false,cronInterval=null,cronMs=0,cronRegresivo=false;
+let currentPreset='classic',currentFont="'Montserrat', sans-serif",currentFontKey='montserrat';
+
+function emit(type,payload={}){ch.postMessage({type,payload});}
+function toast(msg){let t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2200);}
+function showTab(n,b){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));document.getElementById(n).classList.add('active');if(b)b.classList.add('active');}
+function quickToggle(k){let b=document.getElementById('vbtn-'+k);b.classList.contains('on')?(setVbtnOff(k),hideKey(k)):(setVbtnOn(k),showKey(k));}
+function setVbtnOn(k){let b=document.getElementById('vbtn-'+k);if(b)b.classList.add('on');}
+function setVbtnOff(k){let b=document.getElementById('vbtn-'+k);if(b)b.classList.remove('on');}
+function showKey(k){const m={bug:'SHOW_BUG',sesionbar:'TOGGLE_SESIONBAR',torre:'TOGGLE_TORRE',timer:'TOGGLE_TIMER',ticker:'TICKER',intro:'INTRO'};const p={sesionbar:{visible:true},torre:{visible:true},timer:{visible:true},ticker:{active:true,texto:document.getElementById('ticker_text').value},intro:buildIntroPayload()};emit(m[k]||'SHOW_ELEMENT',p[k]||{el:k});}
+function hideKey(k){const m={bug:'HIDE_ELEMENT',sesionbar:'TOGGLE_SESIONBAR',torre:'TOGGLE_TORRE',timer:'TOGGLE_TIMER',lt:'HIDE_LOWER_THIRD',bandera:'FLAG',mensaje:'HIDE_MENSAJE',fullgfx:'FULL_GRAPHIC',batalla:'HIDE_BATALLA',ticker:'TICKER',intro:'HIDE_INTRO'};const p={bug:{el:'bug'},sesionbar:{visible:false},torre:{visible:false},timer:{visible:false},bandera:{color:'clear'},fullgfx:{tipo:'hide'},ticker:{active:false,texto:''}};emit(m[k],p[k]||{el:k});}
+function clearAll(){emit('CLEAR_ALL');['lt','bandera','mensaje','fullgfx','batalla','ticker','vr','intro'].forEach(k=>setVbtnOff(k));toast('🔴 PANTALLA LIMPIADA');}
+
+/* SETUP */
+function selectPilotosMode(m){document.querySelectorAll('#mode-manual,#mode-json').forEach(c=>c.classList.remove('selected'));document.getElementById('mode-'+m).classList.add('selected');document.getElementById('json-loader').style.display=m==='json'?'block':'none';}
+function selectTimerMode(m){timerMode=m;['vueltas','cronometro','ambos','regresivo'].forEach(x=>{let e=document.getElementById('mode-'+x);if(e)e.classList.remove('selected');});document.getElementById('mode-'+m).classList.add('selected');}
+function applySetup(){updateTimerPanels();emit('TIMER_MODE',{mode:timerMode});showTab('sesion',document.querySelector('nav button:nth-child(4)'));toast('✔ Config aplicada');}
+function updateTimerPanels(){let pv=document.getElementById('panel-vueltas'),pc=document.getElementById('panel-cronometro'),lr=document.getElementById('regresivo-setup'),cl=document.getElementById('cron-title-label');pv.style.display=(timerMode==='vueltas'||timerMode==='ambos')?'':'none';pc.style.display=(timerMode!=='vueltas')?'':'none';if(lr)lr.style.display=timerMode==='regresivo'?'block':'none';if(cl){const lbl={cronometro:'Cronómetro',ambos:'Cronómetro',regresivo:'Cuenta Regresiva'};cl.textContent=lbl[timerMode]||'Cronómetro';}}
+
+/* ══ OPACIDADES ══ */
+const opDefs={
+  bug:88, torre:88, timer:92, bar:88,         // esquina
+  intro:97, fullgfx:97, podio:96, mensaje:93, batalla:88  // centro
+};
+function liveOp(k,sl){
+  let v=parseInt(sl.value);
+  let vEl=document.getElementById('op-'+k+'-v');if(vEl)vEl.textContent=v+'%';
+  let payload={};payload[k]=v;
+  emit('OPACIDAD',payload);
+}
+function applyAllOpacity(){
+  let payload={};
+  Object.keys(opDefs).forEach(k=>{
+    let sl=document.getElementById('op-'+k);if(sl)payload[k]=parseInt(sl.value);
+  });
+  emit('OPACIDAD',payload);
+  toast('✔ Opacidades aplicadas');
+}
+function resetOpacity(){
+  Object.entries(opDefs).forEach(([k,v])=>{
+    let sl=document.getElementById('op-'+k),vl=document.getElementById('op-'+k+'-v');
+    if(sl)sl.value=v; if(vl)vl.textContent=v+'%';
+  });
+  applyAllOpacity();
+  toast('↺ Opacidades restablecidas');
+}
+
+/* CRONOMETRO HH:mm:ss */
+function formatHHMMSS(ms){let sign=ms<0?'-':'';ms=Math.abs(ms);let h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000);return sign+h.toString().padStart(2,'0')+':'+m.toString().padStart(2,'0')+':'+s.toString().padStart(2,'0');}
+function cronStart(){if(cronRunning)return;cronRunning=true;if(timerMode==='regresivo'&&cronMs===0){let parts=(document.getElementById('cron-duration').value||'00:15:00').split(':');let hh=parseInt(parts[0]||0),mm=parseInt(parts[1]||0),ss=parseInt(parts[2]||0);cronMs=(hh*3600+mm*60+ss)*1000;cronRegresivo=true;}else{cronRegresivo=(timerMode==='regresivo');}document.getElementById('cron-subtitle').textContent='En marcha';cronInterval=setInterval(()=>{cronRegresivo?cronMs-=1000:cronMs+=1000;if(cronRegresivo&&cronMs<=0){cronMs=0;cronPause();document.getElementById('cron-subtitle').textContent='¡Tiempo!';}let d=formatHHMMSS(cronMs);document.getElementById('cron-display').textContent=d;emit('CRON_UPDATE',{time:d,ms:cronMs});},1000);}
+function cronPause(){if(!cronRunning)return;clearInterval(cronInterval);cronRunning=false;document.getElementById('cron-subtitle').textContent='Pausado';}
+function cronReset(){cronPause();cronMs=0;document.getElementById('cron-display').textContent='00:00:00';document.getElementById('cron-subtitle').textContent='Parado';emit('CRON_UPDATE',{time:'00:00:00',ms:0});}
+
+/* VUELTAS */
+function cambiarVuelta(d){let max=parseInt(document.getElementById('s_vueltas').value)||20;vActual=Math.max(0,Math.min(max,vActual+d));document.getElementById('v-actual').textContent=vActual;emit('VUELTA',{actual:vActual,total:max});toast('Vuelta '+vActual+'/'+max);}
+function resetVuelta(){vActual=0;document.getElementById('v-actual').textContent=0;emit('VUELTA',{actual:0,total:document.getElementById('s_vueltas').value});}
+
+/* SESION */
+function emitSesion(){updateTimerPanels();emit('SESION',{evento:document.getElementById('s_evento').value,categoria:document.getElementById('s_categoria').value,tipo:document.getElementById('s_tipo').value,ronda:document.getElementById('s_ronda').value,circuito:document.getElementById('s_circuito').value,vueltas:document.getElementById('s_vueltas').value,vueltaActual:vActual,tempAire:document.getElementById('s_aire').value,tempPista:document.getElementById('s_pista').value,clima:document.getElementById('s_clima').value,timerMode:timerMode});toast('✔ Sesión actualizada');}
+
+/* PILOTOS */
+function addPilotoRow(p={}){let tb=document.getElementById('pilotos-tbody'),tr=document.createElement('tr');let fs=p.foto||'';tr.innerHTML=`<td><input type="number" class="p-pos" value="${p.pos||''}" style="width:36px;"></td><td><input class="p-num" value="${p.num||''}" style="width:42px;" placeholder="#1"></td><td><img class="foto-prev" src="${fs}" onerror="this.src=''"><input class="p-foto" value="${fs}" placeholder="URL foto" style="font-size:9px;margin-top:3px;" oninput="this.previousElementSibling.src=this.value"></td><td><input class="p-nombre" value="${p.nombre||''}" placeholder="Nombre"></td><td><input class="p-equipo" value="${p.equipo||''}" placeholder="Equipo"></td><td><input class="p-pais" value="${p.pais||''}" style="width:44px;font-size:16px;text-align:center;"></td><td><input class="p-vuelta" value="${p.vuelta||''}" style="width:84px;" placeholder="1:22.456"></td><td><input class="p-gap" value="${p.gap||''}" style="width:66px;" placeholder="+1.234"></td><td><select class="p-estado" style="width:63px;"><option ${p.estado==='pista'?'selected':''}>pista</option><option ${p.estado==='pit'?'selected':''}>pit</option><option ${p.estado==='out'?'selected':''}>out</option><option ${p.estado==='dnf'?'selected':''}>dnf</option></select></td><td><button class="del-btn" onclick="this.closest('tr').remove()">×</button></td>`;tb.appendChild(tr);}
+function limpiarPilotos(){document.getElementById('pilotos-tbody').innerHTML='';}
+function getPilotos(){return Array.from(document.querySelectorAll('#pilotos-tbody tr')).map(tr=>({pos:tr.querySelector('.p-pos').value,num:tr.querySelector('.p-num').value,foto:tr.querySelector('.p-foto').value,nombre:tr.querySelector('.p-nombre').value,equipo:tr.querySelector('.p-equipo').value,pais:tr.querySelector('.p-pais').value,vuelta:tr.querySelector('.p-vuelta').value,gap:tr.querySelector('.p-gap').value,estado:tr.querySelector('.p-estado').value}));}
+function cargarDemo(){limpiarPilotos();[{pos:1,num:'#7',nombre:'Carlos López',equipo:'Red Speed',pais:'🇪🇨',vuelta:'1:22.341',gap:'—',estado:'pista',foto:'https://i.pravatar.cc/80?img=11'},{pos:2,num:'#12',nombre:'Juan Pérez',equipo:'Team Fast',pais:'🇪🇨',vuelta:'1:22.608',gap:'+1.234',estado:'pista',foto:'https://i.pravatar.cc/80?img=12'},{pos:3,num:'#33',nombre:'Sofía Martínez',equipo:'PMV Junior',pais:'🇪🇨',vuelta:'1:22.891',gap:'+2.456',estado:'pista',foto:'https://i.pravatar.cc/80?img=25'},{pos:4,num:'#5',nombre:'Andrés Mora',equipo:'Red Speed',pais:'🇨🇴',vuelta:'1:23.012',gap:'+3.780',estado:'pista',foto:'https://i.pravatar.cc/80?img=14'},{pos:5,num:'#19',nombre:'Luca Ferrari',equipo:'GT Academy',pais:'🇮🇹',vuelta:'1:23.200',gap:'+5.100',estado:'pista',foto:'https://i.pravatar.cc/80?img=15'},{pos:6,num:'#88',nombre:'Pedro Salas',equipo:'Team Fast',pais:'🇪🇨',vuelta:'1:23.440',gap:'+7.234',estado:'pista',foto:'https://i.pravatar.cc/80?img=16'},{pos:7,num:'#44',nombre:'Mia Torres',equipo:'PMV Junior',pais:'🇪🇨',vuelta:'1:23.890',gap:'+12.0',estado:'pit',foto:'https://i.pravatar.cc/80?img=26'},{pos:8,num:'#3',nombre:'Felipe Castro',equipo:'GT Academy',pais:'🇨🇴',vuelta:'1:24.100',gap:'LAP',estado:'pista',foto:'https://i.pravatar.cc/80?img=18'},{pos:9,num:'#21',nombre:'Valentina Cruz',equipo:'Red Speed',pais:'🇵🇪',vuelta:'1:24.500',gap:'LAP',estado:'pista',foto:'https://i.pravatar.cc/80?img=27'},{pos:10,num:'#66',nombre:'Mateo Ruiz',equipo:'Team Fast',pais:'🇪🇨',vuelta:'—',gap:'—',estado:'out',foto:'https://i.pravatar.cc/80?img=20'}].forEach(d=>addPilotoRow(d));}
+function emitTorre(){emit('TORRE',{pilotos:getPilotos()});setVbtnOn('torre');toast('Torre actualizada');}
+function emitVR(){emit('VUELTA_RAPIDA',{piloto:document.getElementById('vr_piloto').value,num:document.getElementById('vr_num').value,tiempo:document.getElementById('vr_tiempo').value,vuelta:document.getElementById('vr_vuelta').value});setVbtnOn('vr');toast('🟣 VR lanzada');}
+
+/* LOWER THIRD */
+function updateLTPreview(){document.getElementById('lt_pn').textContent=document.getElementById('lt_nombre').value+' '+document.getElementById('lt_pais').value;document.getElementById('lt_ps').textContent=document.getElementById('lt_sub').value+' | '+document.getElementById('lt_extra').value;}
+function emitLT(){emit('LOWER_THIRD',{tipo:document.getElementById('lt_tipo').value,nombre:document.getElementById('lt_nombre').value,sub:document.getElementById('lt_sub').value,pais:document.getElementById('lt_pais').value,extra:document.getElementById('lt_extra').value});setVbtnOn('lt');toast('Lower Third lanzado');}
+function hideLT(){emit('HIDE_LOWER_THIRD');setVbtnOff('lt');}
+
+/* BANDERAS */
+function emitFlag(c){emit('FLAG',{color:c});c==='clear'?setVbtnOff('bandera'):setVbtnOn('bandera');toast('Bandera: '+c);}
+function emitMensaje(){emit('MENSAJE',{texto:document.getElementById('msg_texto').value,tipo:document.getElementById('msg_tipo').value,duracion:parseInt(document.getElementById('msg_dur').value)*1000});setVbtnOn('mensaje');toast('Mensaje lanzado');}
+function hideMensaje(){emit('HIDE_MENSAJE');setVbtnOff('mensaje');}
+
+/* GRAFICOS */
+function emitFG(tipo){let p={tipo};if(tipo==='campeonato-tabla')p.pilotos=getCampeonato();if(['parrilla','resultados','clasificacion'].includes(tipo))p.pilotos=getPilotos();if(tipo==='podio')p.pilotos=getPilotos().slice(0,3);emit('FULL_GRAPHIC',p);tipo==='hide'?setVbtnOff('fullgfx'):setVbtnOn('fullgfx');toast('GFX: '+tipo);}
+function emitBatalla(){emit('BATALLA',{pilotoA:document.getElementById('bat_a').value,pilotoB:document.getElementById('bat_b').value,delta:document.getElementById('bat_delta').value});setVbtnOn('batalla');toast('Batalla ON');}
+function hideBatalla(){emit('HIDE_BATALLA');setVbtnOff('batalla');}
+function emitTicker(a){emit('TICKER',{active:a,texto:document.getElementById('ticker_text').value});a?setVbtnOn('ticker'):setVbtnOff('ticker');}
+
+/* INTRO */
+function buildIntroPayload(){return{evento:document.getElementById('ii-evento').value,categoria:document.getElementById('ii-categoria').value,ronda:document.getElementById('ii-ronda').value,numRonda:document.getElementById('ii-numronda').value,circuito:document.getElementById('ii-circuito').value,ciudad:document.getElementById('ii-ciudad').value,longitud:document.getElementById('ii-longitud').value,curvas:document.getElementById('ii-curvas').value,vueltas:document.getElementById('ii-vueltas').value,tempPista:document.getElementById('ii-temp').value,clima:document.getElementById('ii-clima').value,numPilotos:document.getElementById('ii-pilotos').value,pole:document.getElementById('ii-pole').value,vrAnterior:document.getElementById('ii-vr').value,trackImg:document.getElementById('ii-trackimg').value,extra:document.getElementById('ii-extra').value,autohide:parseInt(document.getElementById('ii-autohide').value)||0};}
+function emitIntro(){emit('INTRO',buildIntroPayload());setVbtnOn('intro');toast('🎬 Intro lanzada');}
+function hideIntro(){emit('HIDE_INTRO');setVbtnOff('intro');}
+function updateIntroPreview(){document.getElementById('ipev').textContent=(document.getElementById('ii-evento').value||'PMV KARTING').toUpperCase();document.getElementById('ipsub').textContent=(document.getElementById('ii-categoria').value||'—')+' — '+(document.getElementById('ii-ronda').value||'—');}
+
+/* CAMPEONATO */
+function addCampRow(d={}){let tb=document.getElementById('camp-tbody'),i=tb.rows.length+1,tr=document.createElement('tr');tr.innerHTML=`<td style="font-weight:900;color:#dc143c;padding:5px 6px;">${d.pos||i}</td><td><input class="c-nombre" value="${d.nombre||''}" placeholder="Nombre"></td><td><input class="c-equipo" value="${d.equipo||''}" placeholder="Equipo"></td><td><input class="c-pts" type="number" value="${d.pts||0}" style="width:56px;"></td><td><input class="c-dif" value="${d.dif||'—'}" style="width:56px;"></td><td><input class="c-vr" type="number" value="${d.vr||0}" style="width:46px;"></td><td><button class="del-btn" onclick="this.closest('tr').remove()">×</button></td>`;document.getElementById('camp-tbody').appendChild(tr);}
+function cargarCampDemo(){document.getElementById('camp-tbody').innerHTML='';[{pos:1,nombre:'Carlos López',equipo:'Red Speed',pts:250,dif:'—',vr:3},{pos:2,nombre:'Juan Pérez',equipo:'Team Fast',pts:218,dif:'-32',vr:2},{pos:3,nombre:'Sofía Martínez',equipo:'PMV Junior',pts:195,dif:'-55',vr:1},{pos:4,nombre:'Andrés Mora',equipo:'Red Speed',pts:172,dif:'-78',vr:0},{pos:5,nombre:'Luca Ferrari',equipo:'GT Academy',pts:150,dif:'-100',vr:1}].forEach(d=>addCampRow(d));}
+function getCampeonato(){return Array.from(document.querySelectorAll('#camp-tbody tr')).map((tr,i)=>({pos:i+1,nombre:tr.querySelector('.c-nombre').value,equipo:tr.querySelector('.c-equipo').value,pts:tr.querySelector('.c-pts').value,dif:tr.querySelector('.c-dif').value,vr:tr.querySelector('.c-vr').value}));}
+
+/* TEMA */
+const presetColors={classic:{c1:'#dc143c',c2:'#8b0000',accent:'#00ff88',txt:'#ffffff'},'sport-blue':{c1:'#0088ff',c2:'#004488',accent:'#ffcc00',txt:'#ffffff'},'neon-green':{c1:'#00ff88',c2:'#006633',accent:'#ffff00',txt:'#ffffff'},gold:{c1:'#c8960c',c2:'#7a5800',accent:'#ffffff',txt:'#ffffff'},white:{c1:'#222222',c2:'#444444',accent:'#dc143c',txt:'#111111'}};
+function selectPreset(p){currentPreset=p;document.querySelectorAll('.theme-card').forEach(c=>c.classList.remove('selected'));document.getElementById('tc-'+p).classList.add('selected');let d=presetColors[p];if(d){setCol('c1',d.c1);setCol('c2',d.c2);setCol('accent',d.accent);setCol('txt',d.txt);}}
+function setCol(k,v){let ci=document.getElementById('col-'+k),ti=document.getElementById('col-'+k+'-txt');if(ci)ci.value=v;if(ti)ti.value=v;}
+function syncColor(k){let v=document.getElementById('col-'+k+'-txt').value;if(/^#[0-9a-fA-F]{6}$/.test(v))document.getElementById('col-'+k).value=v;}
+function previewCustom(){currentPreset='custom';document.querySelectorAll('.theme-card').forEach(c=>c.classList.remove('selected'));}
+function selectFont(f,key){currentFont=f;currentFontKey=key;document.querySelectorAll('.font-card').forEach(c=>c.classList.remove('selected'));let fc=document.getElementById('fc-'+key);if(fc)fc.classList.add('selected');}
+function updateSize(){let tv=document.getElementById('sz-timer')?.value,lt=document.getElementById('sz-lt')?.value,tr=document.getElementById('sz-torre')?.value;if(tv&&document.getElementById('sz-timer-val'))document.getElementById('sz-timer-val').textContent=tv+'px';if(lt&&document.getElementById('sz-lt-val'))document.getElementById('sz-lt-val').textContent=lt+'px';if(tr&&document.getElementById('sz-torre-val'))document.getElementById('sz-torre-val').textContent=tr+'px';}
+function applyTheme(){let skew=parseInt(document.getElementById('col-skew').value);emit('TEMA',{preset:currentPreset,font:currentFont,c1:document.getElementById('col-c1').value,c2:document.getElementById('col-c2').value,accent:document.getElementById('col-accent').value,txt:document.getElementById('col-txt').value,skew:skew});toast('🎨 Tema aplicado');}
+function resetTheme(){selectPreset('classic');selectFont("'Montserrat', sans-serif",'montserrat');applyTheme();toast('↺ Restablecido');}
+
+/* JSON */
+function loadJSON(){let u=document.getElementById('json-url').value.trim();if(!u){showJsonMsg('Ingresa URL','error');return;}fetch(u).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(procesarPilotosData).catch(e=>showJsonMsg('Error: '+e.message,'error'));}
+function loadLocalJSON(inp){let f=inp.files[0];if(!f)return;let r=new FileReader();r.onload=e=>{try{procesarPilotosData(JSON.parse(e.target.result));}catch(err){showJsonMsg('JSON inválido','error');}};r.readAsText(f);}
+function procesarPilotosData(d){let p=d.pilotos||d;if(!Array.isArray(p)){showJsonMsg('Falta array "pilotos"','error');return;}document.getElementById('pilotos-tbody').innerHTML='';p.forEach(x=>addPilotoRow(x));showJsonMsg('✔ '+p.length+' pilotos','ok');toast('✅ '+p.length+' pilotos cargados');}
+function exportJSON(){let d={evento:document.getElementById('s_evento').value,pilotos:getPilotos()};let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:'application/json'}));a.download='pilotos-karting.json';a.click();toast('💾 JSON exportado');}
+function showJsonMsg(msg,type){let e=document.getElementById('json-status');e.textContent=msg;e.className='json-status json-'+type;}
+</script>
+</body>
+</html>
