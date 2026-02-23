@@ -142,11 +142,13 @@ input[type=range]{accent-color:#dc143c;}
 .intro-prev .ip-bar{height:2px;background:linear-gradient(90deg,#dc143c,#8b0000,transparent);margin-top:10px;}
 </style>
 
-<!-- Firebase SDK + PMV Bridge -->
+<!-- Firebase SDK + studio Bridge -->
+<!-- 1. Firebase App (primero siempre) -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<!-- 2. Firebase Database -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<!-- 3. Bridge (último, después del SDK) -->
 <script src="studio-bridge.js"></script>
-
 
 </head>
 <body>
